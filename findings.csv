@@ -1,0 +1,253 @@
+id,severity,cvss_score,cvss_vector,finding_type,title,description,impact,mitigation,replication_steps,host_detection_techniques,network_detection_techniques,references,finding_guidance,tags
+5,Critical,10.0,,Host,Kiosks Vulnerable to Break Outs,"<p>Any user with physical or remote access to a kiosk system can break out of the kiosk interface and gain system access without the use of any complex exploits, tools, or techniques.</p>","<p>After creating an RDP session, the team was able to break out of the full-screen kiosk mode on all kiosk systems. The kiosks utilize the fullscreen mode of Internet Explorer and obfuscation of the taskbar. Simply using techniques such as Alt-Tab and closing the opened web browser allows for a breakout of the kiosks. The kiosks also don't immediately enter into full screen, which allows an attacker a window to open Powershell in the time it takes to start, effectively gaining local system-level access to each workstation.</p>","<ul>
+<li>Harden kiosk configs to not allow malicious user input</li>
+<li>Consider utilizing enterprise kiosk software such as Oracle's self-service kiosk solution.</li>
+</ul>","<p>The issue is found within weak passwords. Once the weak password is found and used within an RDP session, the team can break out of the full-screen kiosk and gain local access to each workstation.</p>",,,"<ul>
+<li><a href=""https://www.oracle.com/industries/hospitality/hotel-casino-kiosk-solutions/"">https://www.oracle.com/industries/hospitality/hotel-casino-kiosk-solutions/ </a></li>
+</ul>",,RDP
+40,Critical,10.0,,Network,Exposed Tram API,"<p>The trams to long-term parking, short-term parking, and the subway have their API exposed to the guest network with no authentication required. Additionally there is the ability to manipulate an admin parameter which would allow an attacker the ability to control the trams' ability to stop and start. This is a severe risk to the safety of the passengers as well as business functionality. Should an attacker stop the trams during normal operations, passengers could be injured or even killed.</p>","<p>The trams' api was accessible from the guest network. Additionally, this API had no authentication to access it and it operated over http. The use of http instead of https exposes the sensitive data to further potential for eavesdropping and manipulation. After the team further analyzed the site, it was found that manipulation of the isAdmin parameter in the URL allows users to manipulate the tram as an admin would. This would grant an attacker with the ability to stop and start the trams and poses a great risk.</p>","<ul>
+<li>Isolate the train API from the guest network. Restrict access to the API to only authorized personnel and systems.</li>
+<li>Transition the API from HTTP to HTTPS to ensure encrypted communication and prevent data interception.</li>
+<li>Implement robust authentication mechanisms, such as API keys, to control access and prevent unauthorized manipulation of the trams.</li>
+</ul>",,,,,,
+8,Critical,10.0,,Network,Kiosk Lack Password Protection,<p>{{.client}}'s kiosks have no password protection. This allowed the team to connect with only the username “Administrator” and a blank password. This level of access on the kiosks allows users to operate with high privileges that could access stored domain credentials which can then be used to pivot into Active Directory.</p>,"<p>The team was able to gain administrative access to {{.client}}’s kiosks through the “Administrator” username and a blank password. The team entered these credentials in the Metasploit module “exploit/windows/smb/psexec” along with the IP Address of TODO. A reverse TCP handler was created and the exploit was run. Once the reverse shell connection was secured, the team verified that we were logged on as the administrator. After compromise, the team pivoted to an RDP connection where valid AD credentials were found.</p>","<ul>
+<li>Create a password password policy for kiosk users referencing the password data (see: Appendix A)</li>
+<li>Kiosks should not be run through the administrator account with administrative privileges. {{.client}} should either change the account to a low-level user and utilize a kiosk management software that is segmented from the rest of the network</li>
+</ul>","<p>Enter username: Administrator and blank password into Metasploit module ""exploit/windows/smb/psexec"" along with the IP Address of the system you're exploiting. If the creds are valid you will use the options given to you after you run the Metasploit module to run a reverse shell. After running the reverse shell, you can see which services have administrator access. </p>",,,,"<p>The team entered these credentials in the Metasploit module “exploit/windows/smb/psexec” along with an IP Address. A reverse TCP handler was created and the exploit was run. Once the reverse shell connection was secured, the team verified that we were logged on as the administrator.</p>","weak creds,blank password,Metasploit"
+6,Critical,10.0,,Network,OpenLDAP Clear Text Passwords,<p>Attackers can view and export clear text passwords for all users in the domain from weak credentials combined with an insecure password storage policy in the server. It allows attackers to compromise all users in a server including the AD domain.</p>,"<p>The team identified valid credentials for the server by testing passwords from publicly available wordlists. Once the passwords were authenticated, the team had access to cleartext passwords stored in the TODO attribute. Passwords should not be stored in clear text. They should instead be hashed with a secure algorithm, such as bcrypt, to prevent exfiltration or reuse of passwords.</p>","<ul>
+<li>Change to a secure hash algorithm</li>
+<li>Change all the passwords within the server to utilize best practices for length and complexity</li>
+</ul>",,,,"<ul>
+<li><a href=""https://www.ibm.com/docs/en/zos/2.3.0?topic=hashing-configuring-encryption"">https://www.ibm.com/docs/en/zos/2.3.0?topic=hashing-configuring-encryption</a></li>
+<li><a href=""https://www.openldap.org/doc/admin24/security.html"">https://www.openldap.org/doc/admin24/security.html </a></li>
+</ul>",,"brute forcing,unencrypted passwords,weak creds,LDAP"
+7,Critical,10.0,,Network,Weak Passwords/Password Policy,"<p>Weak passwords/ reuse of passwords were persistent throughout the network, allowing an attacker to conduct a full domain takeover once passwords were guessed or cracked. In addition, attackers can pivot through the network using sets of credentials that are vulnerable. This allows an attacker to elevate privileges and compromise further hosts on the network.</p>","<p>The team can identify various instances of weak passwords, including TODO, TODO, and TODO. These sets of credentials were used to pivot to all hosts connected to the domain in addition to various web apps. Using the information gleaned from weak passwords, the team was able to compromise the full Active Directory in addition to TODO.</p>","<ul>
+<li>Implement a password policy utilizing best practices for length and complexity</li>
+<li>Use unique passwords for each user and service, and encourage the use of a password manager</li>
+</ul>",,,,"<ul>
+<li><a title=""https://docs.microsoft.com/en-us/microsoft-365/admin/misc/password-policy-recommend ations?view=o365-worldwide"" href=""https://docs.microsoft.com/en-us/microsoft-365/admin/misc/password-policy-recommend%20ations?view=o365-worldwide"">https://docs.microsoft.com/en-us/microsoft-365/admin/misc/password-policy-recommend</a><br /><a title=""https://docs.microsoft.com/en-us/microsoft-365/admin/misc/password-policy-recommend ations?view=o365-worldwide"" href=""https://docs.microsoft.com/en-us/microsoft-365/admin/misc/password-policy-recommend%20ations?view=o365-worldwide"">ations?view=o365-worldwide</a></li>
+<li><a href=""https://auth0.com/blog/dont-pass-on-the-new-nist-password-guidelines/"">https://auth0.com/blog/dont-pass-on-the-new-nist-password-guidelines/</a></li>
+</ul>",,
+23,Critical,10.0,,Web,Command Injection,"<p>Command injection allows a user to pass maliciously crafted input into an application, which then is executed at an OS level. The application is unable to differentiate between the malicious input and regular application commands, and it executes calls within the authority context of the original application.</p>","<p>The team determined that the TODO application was vulnerable to command injection, resulting in remote code execution. The team took the following steps: TODO</p>","<ul>
+<li>Perform server-side input validation of user input to ensure only legitimate queries are executed</li>
+<li>Avoid directly executing commands</li>
+</ul>",,,,"<ul>
+<li><a href=""https://owasp.org/www-community/attacks/Command_Injection"">https://owasp.org/www-community/attacks/Command_Injection</a></li>
+<li><a href=""https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Input_Validation_Cheat_Sheet.md"">https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Input_Validation_Cheat_Sheet.md</a></li>
+</ul>",,
+31,Critical,10.0,,Web,Default Credentials,"<p>Default accounts are built into systems, applications, databases, etc. These accounts are publicly documented and often overlooked during system hardening and deployment. The credentials for these accounts are often readily available online and allow an attacker to quickly access a machine.</p>",<p>The assessment team identified that TODO had default credentials that were utilized to TODO.</p>,"<ul>
+<li>Ensure no accounts or applications are using default credentials</li>
+<li>Consider utilizing a Privileged Access Management (PAM) utility such as XTAM to provide centralized management of accounts and secrets</li>
+</ul>",,,,"<ul>
+<li><a href=""https://www.us-cert.gov/ncas/alerts/TA13-175A"">https://www.us-cert.gov/ncas/alerts/TA13-175A</a></li>
+<li><a href=""https://help.xtontech.com/content/users/getting-started-guide/what-is-xtam.htm"">https://help.xtontech.com/content/users/getting-started-guide/what-is-xtam.htm</a></li>
+</ul>",,
+36,Critical,9.9,CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:H,Network,Denial of Service,<p>A Denial Of Service (DOS) attack exploits a vulnerability to prevent users from accessing a resource or application.</p>,<p>TODO: The potential impact of a denial-of-service attack greatly depends on how and by whom the application is used. Applications that deal heavily in financial transactions may suffer both financial and brand damage as the result of a denial-of-service attack. An unavailable application that provides critical business data may result in users not being able to do their jobs.</p>,"<ul>
+<li>Regularly update all software, OS, and applications</li>
+<li>Employ DDoS protection services and solutions that can help mitigate and absorb the impact of DDoS attacks. These services can help to filter out malicious traffic and ensure that legitimate traffic can still access the system or network.</li>
+</ul>","<ul>
+<li>it can occur when the transmission medium is disrupted between the user and the resource, leaving no path for communication</li>
+<li>the target system may be coaxed to reset, oftentimes repeatedly, which forces any established connections to reset</li>
+<li>the target resource is fooled into consuming all available computing resources, thereby leaving no available resources to handle legitimate requests</li>
+</ul>",,,"<ul>
+<li><a href=""http://www.owasp.org/index.php/Application_Denial_of_Service"">http://www.owasp.org/index.php/Application_Denial_of_Service</a></li>
+<li><a href=""https://nvd.nist.gov/vuln/detail/CVE-2022-1698"">https://nvd.nist.gov/vuln/detail/CVE-2022-1698</a></li>
+</ul>
+<p> </p>",,"DOS,Denial-of-Service"
+14,Critical,9.8,,Web,Unauthenticated Root Access to MySQL Database,"<p>The MySQL Database running on TCP Port (TODO) allows unauthenticated remote root login. Compromise of the database could mean an important loss of confidentiality, integrity, and availability of sensitive (TODO) information.</p>","<p>An adversary will be able to alter and delete customer and payment records. Further, an adversary could alter product information on their website, potentially resulting in company defacement.</p>","<ul>
+<li>The root MySQL user should be given a strong password (12 characters, composed of a mix of special characters, upper and lower case letters, and numbers).</li>
+<li>Implementing multi-factor authentication (MFA) and account lockouts will also help with security.</li>
+</ul>","<ol>
+<li>Enter the following into a terminal:</li>
+<li>MySQL -u root -h (ip_address)</li>
+</ol>",,,"<ul>
+<li><a href=""https://attack.mitre.org/techniques/T1110/001/"">https://attack.mitre.org/techniques/T1110/001/</a></li>
+</ul>",,
+33,Critical,9.5,,Web,Remote Code Execution via File Upload,"<p>Command injection is an attack in which the goal is the execution of arbitrary commands on the host operating system via a vulnerable application. Command injection attacks are possible when an application passes unsafe user-supplied data (forms, cookies, HTTP headers, etc.) to a system shell.</p>
+<p>In this attack, the attacker-supplied operating system commands are usually executed with the privileges of the vulnerable application. Command injection attacks are possible largely due to insufficient input validation. During the analysis, it was observed that we were able to upload a (TODO) file with malicious content, which led to the execution of commands on the (TODO) server.</p>","<p>The consequences of unrestricted file upload can vary, including complete, execution of remote commands system takeover, an overloaded file system or database, forwarding attacks to back-end systems, client-side attacks, or simple defacement. It depends on what the application does with the uploaded file and especially where it is stored.</p>","<p>It is recommended to implement the following:</p>
+<ul>
+<li>Implement adequate validation on the file type being uploaded.</li>
+<li>Implement a mechanism to identify the malicious files upon the files are being uploaded and reject all the malicious files.</li>
+<li>Implement server-side sandboxing for all the files that are uploaded.</li>
+<li>Restrict all file types and known viruses, ransomware, etc by checking the file signatures.</li>
+<li>Implement a file extension check on every file upload endpoint</li>
+<li>Avoid using shell execution functions. If unavoidable, limit their use to very specific use cases.</li>
+<li>Perform proper input validation when taking user input into a shell execution command.</li>
+<li>Use a safe API when accepting user input into the application.</li>
+<li>Escape special characters in the case where a safe API is not available.</li>
+</ul>","<p>Using Burpsuite, intercept the file upload between the host and the web server, change the file name or the uploaded file entirely, and complete the modified request. From there, a variety of actions can be taken depending on the contents of the file uploaded.</p>",,,"<ul>
+<li><a href=""https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload"">https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload</a></li>
+<li><a href=""https://cwe.mitre.org/data/definitions/77.html"">https://cwe.mitre.org/data/definitions/77.html</a></li>
+</ul>",,
+38,High,9.0,,Network,SQL Injection,"<p>SQL injection is a vulnerability that occurs when an attacker has the ability to modify the SQL query an application uses. This can lead to unauthorized access to sensitive data, data manipulation, and other malicious activities.  In SQL injection attacks, the attacker exploits vulnerabilities in the application's input validation methods, allowing them to insert or manipulate SQL queries.</p>","<p>The team determined discovered that the TODO application did not have proper input validation, making the application susceptible to SQL injection. This vulnerability could potentially lead to data breaches, disclosure of sensitive information, and unauthorized modifications to the database.</p>","<p>To mitigate the risk of SQL injection, the following recommendations should be implemented:</p>
+<ul>
+<li>Input Validation: Implement server-side validation that ensures that user input is properly sanitized and contains the expected formats.</li>
+<li>Parameterized Queries: Utilize parameterized queries or prepared statements instead of constructing the SQL queries with user input. This separates user input from the SQL query, making it difficult for attackers to inject malicious code.</li>
+<li>Least Privilege Principle: Assign the minimum required permissions to the application's database user. </li>
+</ul>",,,,"<ul>
+<li>https://owasp.org/www-community/attacks/SQL_Injection</li>
+<li>https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Input_Validation_Cheat_Sheet.md</li>
+</ul>",,
+10,High,9.0,,Network,Unnecessary Workstation Permissions,"<p>Any authenticated user on the domain has local administrator access to TODO, without explicit privilege escalation techniques. With this access, any user can harvest local credentials or laterally move further through the corporate network.</p>","<p>Any user that’s able to authenticate to TODO can elevate to administrator access. This can be leveraged to pillage hashes or move laterally throughout the network. Internal Windows assets can be harvested and potentially used to leak sensitive information, allowing for the elevation of general domain privileges.</p>","<ul>
+<li>Restrict permissions to the host, adhering to the principle of least privilege</li>
+</ul>",,,,,,
+42,High,8.1,CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,Host,EternalBlue,"<p>EternalBlue is a remote code execution (RCE) exploit that was developed by the United States National Security Agency (NSA). It was leaked in 2017 and has been used in a number of high profile attacks.</p>
+<p>EternalBlue exploits a vulnerability in the Microsoft Server Message Block (SMB) protocol, which is used by Windows computers to communicate with each other. The vulnerability allows an attacker to send a specially crafted packet to a vulnerable SMB server, which can then be used to execute arbitrary code on the server.</p>","<p>A malicious actor may be able to gain access to a system and perform remote code execution with administrative rights. In an AD environment, this can allow an attacker to gain a foothold on the environment and move to other machines.</p>
+<p>In some cases, when this attack fail it can lead to the system crashing, which can take a critical system offline until an administrator is able to restart it.</p>","<p>The best way to protect against EternalBlue is to patch all vulnerable systems. Microsoft has released patches for all supported versions of Windows, as well as for other operating systems that use SMB. See the <a href=""https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010"">MS17-010</a> article for information on how to patch your systems.</p>",,"<p>This vulnerability can be detected by ensuring that the MS17-010 patch has been applied to a system. See the <span class=""italic""><a href=""https://support.microsoft.com/en-us/topic/how-to-verify-that-ms17-010-is-installed-f55d3f13-7a9c-688c-260b-477d0ec9f2c8"">How to verify that MS17-010 is installed</a></span> article by Microsoft for further information.</p>",,"<ul>
+<li><a href=""https://nvd.nist.gov/vuln/detail/CVE-2017-0144"">https://nvd.nist.gov/vuln/detail/CVE-2017-0144</a></li>
+<li><a href=""https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010"">https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010</a></li>
+<li><a href=""https://support.sophos.com/support/s/article/KB-000038107?language=en_US"">https://support.sophos.com/support/s/article/KB-000038107?language=en_US</a></li>
+</ul>",,"Remote,Lateral Movement"
+44,High,8.0,,Host,Unauthenticated Information Disclosure Through LDAP Query,<p>An unauthenticated LDAP (Lightweight Directory Access Protocol) query vulnerability allows an attacker to retrieve sensitive personal information from an LDAP directory without the need for proper authentication. </p>,"<p>Using nmap scripts, GreatLakes-Team1 was able to execute an LDAP query which disclosed permissions, organizational units, full names, home addresses, email addresses, and usernames of many users on the corp.kkms.local domain. This is a high severity finding due to the disclosure of Personally Identifiable Information (PII). Additionally, using this information, a threat actor would be able to build a wordlist of users on the domain to conduct span campaigns, lockout accounts, and conduct spear phishing.</p>","<ul>
+<li>Implement Proper Access Controls</li>
+<li>Require Authentication for LDAP Queries</li>
+<li>Data Masking and Redaction</li>
+</ul>",,,,"<ul>
+<li><a href=""https://csrc.nist.gov/pubs/sp/800/122/final"">https://csrc.nist.gov/pubs/sp/800/122/final</a></li>
+<li><a href=""https://www.gsa.gov/reference/gsa-privacy-program/rules-and-policies-protecting-pii-privacy-act"">https://www.gsa.gov/reference/gsa-privacy-program/rules-and-policies-protecting-pii-privacy-act</a></li>
+</ul>",,
+27,High,8.0,,Network,Active Directory Certificate Services (ADCS) Domain Takeover,"<p>Due to misconfigurations in ADCS, any user in the domain could elevate their privileges to become a Domain Admin by enrolling a certificate. This level of access would allow anyone with a valid user account to have complete control over the domain.</p>","<p>While enumerating {{.client}}’s ADCS Server, the team found two default certificate templates that have insecure permissions. Template TODO allows domain users to control the subject of the certificate when enrolling. Using this template, malicious actors can set the subject to an administrative account, and receive a certificate representing them. This certificate can be abused to impersonate the privileged user. Template TODO allows domain users to enroll certificates without a proper purpose or with the ""Any Purpose"" which can be used to enroll certificates on behalf of other users and impersonate them using it. Both of these permissions are very dangerous and can lead to user impersonation.</p>
+<p>TODO make sure the description matches</p>","<ul>
+<li>TODO uncheck in the property sheet ""Subject Name"" the field ""Supply in the request""</li>
+<li>TODO specify a specific purpose or “Extended Key Usage” value</li>
+<li>Restrict permissions on certificate templates</li>
+</ul>",,,,"<ul>
+<li><a href=""https://posts.specterops.io/certified-pre-owned-d95910965cd2"">https://posts.specterops.io/certified-pre-owned-d95910965cd2</a></li>
+<li><a href=""https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-director%20y-environment/"">https://www.riskinsight-wavestone.com/en/2021/06/microsoft-adcs-abusing-pki-in-active-director y-environment/</a></li>
+</ul>",,
+12,High,8.0,,Network,Anonymous Access on PHPMyAdmin,"<p>If an attacker gains access to the PHP host, they can access the PHP management portal without credentials. This gives the attacker full permissions on the attached databases and web server.</p>","<p>By exploiting the target system the team was able to gain authenticated access to the PHP web host system, allowing us to access PHPMyAdmin on localhost. The page is not accessible remotely, however by accessing PHPMyAdmin from the local machine, we were able to access it without credentials. Although an attacker cannot gain access to the panel remotely, if they can get privileged access on the host system, they would be able to gain permissions and elevated privileges on the system.</p>","<ul>
+<li>Enable login on PHPMyAdmin</li>
+</ul>",,,,,,
+11,High,8.0,,Network,Exposed Session Data,"<p>The TODO server sends back the passwords and account secret token of any user in the TODO system on an invalid login with a valid username. Any malicious actor that knows the username of a valid account can obtain full access to that user’s TODO account, effectively creating an opportunity for a user to bypass authentication with a valid username.</p>","<p>By sending a HTTP GET request with the username of a TODO account, the response returns the rewards account password and account secret. These credentials can be used to legitimately log in to the application, allowing more user enumeration, as well as manipulation of TODO.</p>","<ul>
+<li>Modify web app code to not reply with the account password when a login was attempted</li>
+</ul>",,,,,,
+9,High,8.0,,Network,Lack of Network Segmentation,"<p>Due to a lack of network segmentation rules, an attacker can traverse from the TODO network to the TODO network, exposing TODO resources to TODO.</p>","<p>After compromise of the TODO, the team was able to reach the private TODO. This could allow for an attacker to access the internal corporate websites, customer data, and other private information from just a compromise of the public assets.</p>","<ul>
+<li>Set firewall rules to deny communication between subnets</li>
+</ul>",,,,"<ul>
+<li>https://www.cyber.gov.au/acsc/view-all-content/publications/implementing-network-segm entation-and-segregation</li>
+</ul>",,
+41,High,8.0,,Network,Open Mail Relaying Allowed,"<p>This vulnerability allows unauthorized entities to use the mail server to send emails across {{.client}}'s domain from company email accounts without authentication. The exploitation of open mail relays not only facilitates the unauthorized use of {{.client}} resources but also opens the door for attackers to launch a variety of email-based attacks, such as spam campaigns, phishing, and distribution of malware.</p>","<p>{{.client}} had several mailing ports open unnecessarily that resulted in a large attack surface. Using telnet, the team was able to connect to smtp. This gave the team the ability to send emails to users within {{.client}}'s domain. Additionally, the team was able to send an impersonated email to a phishing target using the open mail relay without any authentication.</p>","<ul>
+<li>Configure the mail server to allow relay only from trusted IP addresses or authenticated users </li>
+<li>Enforce strong authentication mechanisms, such as SMTP authentication, to verify the legitimacy of users attempting to relay emails through the server</li>
+</ul>",,,,"<ul>
+<li>https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-45ver2.pdf</li>
+</ul>",,
+32,High,7.7,,Web,Stored Cross-Site Scripting (XSS),"<p>Stored XSS Vulnerability was found on the affected URLs. This allows an attacker to inject a script which gets stored in the application. When a victim navigates to the affected web page in a browser, the XSS payload will be served as part of the web page. This means that victims will inadvertently end-up executing the malicious script once the page is viewed in a browser.</p>","<p>The attacker-supplied code can perform a variety of actions, such as:</p>
+<ul>
+<li>stealing the victim's session token</li>
+<li>(TODO - whatever else is relevant to add)</li>
+</ul>",<p>Best way is to handle the input securely in both client-side and server-side code in a proper manner before it gets stored permanently on the web server - implementing data checks throughout the process of storing data permanently will improve safety.</p>,<p>TODO - add steps</p>,,,<p>https://owasp.org/www-community/attacks/xss/</p>,,
+24,High,7.0,,Network,End of Life/ Out of Date Software,"<p>The team found various hosts running out of date/ end of life software. These versions are vulnerable to many public and common exploits, as well as any new exploits that are released in the future.</p>","<p>Through automated scanning, the team was able to identify out of date/ end of life services that are vulnerable to various exploits. Due to these software packages being so far past their most recent updates, there are several publicly available exploits. If an attacker were to exploit this, they may gain remote code execution, the ability to execute privilege escalation, or exfiltration of data.</p>","<ul>
+<li>Update Windows server 2008 R2 and 2012 R2 to Windows 2019</li>
+<li>Upgrade MySQL to the latest stable version</li>
+</ul>",,,,"<ul>
+<li>https://www.mysql.com/downloads/</li>
+<li>https://learn.microsoft.com/en-us/windows-server/get-started/upgrade-overview</li>
+<li>TODO</li>
+</ul>",,
+25,High,7.0,,Network,Excessive Number of Privileged Users,"<p>Due to the highly integrated nature of the Active Directory environment, and insecure configuration, the team was able to compromise the entirety of the domain. An excessive amount of privileged users creates more opportunity for domain compromise.</p>","<p>The team found nine different users that were members of the Domain Admins group. This excessive amount of Domain Admins users allowed the team to easily compromise the Domain Controller. After the compromise of the domain controller, the team was able to attack and pivot to all domain joined machines (see ADCS Takeover). With the large number of domain admin users, the attack surface is far greater than needs to be, violating common security guidelines.</p>","<ul>
+<li>Reduce the number of users of the network with privileged access, specifically the Administrators Group</li>
+<li>Enforce separation of duties so that no one employee is able to compromise the entire domain</li>
+</ul>",,,,"<ul>
+<li>https://www.cisa.gov/uscert/bsi/articles/knowledge/principles/least-privilege</li>
+</ul>",,
+22,High,7.0,,Network,MySQL Passwords in Cleartext,"<p>{{.client}}’s TODO system utilized a database that contained cleartext passwords of its users. Should a malicious actor gain access to the database, they can easily harm the functionality of all customer rewards accounts.</p>",<p>The team discovered a MySQL database using TODO to store information about {{.client}}’s TODO system. The team logged into the database’s root user with credentials as seen in TODO. From there we used a SELECT statement to access the “users” table that contained credentials. The passwords in the table were not encrypted and were listed in cleartext as shown in TODO.</p>,"<ul>
+<li>Encrypt passwords in the database so that only password hashes are visible.</li>
+<li>Utilize a stronger password policy based off of Appendix A.</li>
+</ul>",,,,,,
+18,High,7.0,,Web,Cross-Site Request Forgery,<p>Web applications that are vulnerable to CSRF are unable to distinguish between actions<br />requested by a user’s browser and actions the user intends to perform.</p>,<p>The team identified that the TODO application is vulnerable to CSRF. The following steps were taken to prove this concept: TODO</p>,"<ul>
+<li>Enable CSRF protections using the application’s framework</li>
+<li>Utilize a transaction identifier to prove interaction between the authenticated user and the application</li>
+<li>require authentication for sensitive or administrative requests</li>
+</ul>",,,,"<ul>
+<li>https://cwe.mitre.org/data/definitions/352.html</li>
+</ul>",,
+35,High,7.0,,Web,Unrestricted File Upload,"<p>Missing proper validation of file to upload was found. The first step in many attacks is to get some code to the system to be attacked. Then the attack only needs to find a way to get the code executed. Using a file upload helps the attacker accomplish the first step.</p>
+<p>The consequences of unrestricted file upload can vary, including complete system takeover, an overloaded file system or database, forwarding attacks to back-end systems, client-side attacks, or simple defacement. (The severity on the type of upload varies, but the fact that unrestricted upload exists at all is being assessed here).</p>","<p>Impact can vary depending on the action taken by the adversary. Generally speaking, can range from medium to high impact as the attacker could potentially escalate and introduce a reverse shell or perform a denial of service attack.</p>","<p>The file types allowed to be uploaded should be restricted to only those that are necessary for business functionality.</p>
+<p>Never accept a filename and its extension directly without having a whitelist filter.</p>
+<p>The application should perform filtering and content checking on any files which are uploaded to the server. Files should be thoroughly scanned and validated before being made available to other users. If in doubt, the file should be discarded. All the control characters and Unicode ones should be removed from the filenames and their extensions without any exception. Also, the special characters such as "";"", "":"", ""&gt;"", ""&lt;"", ""/"" ,""\"",<br />additional ""."", ""*"", ""%"", ""$"", and so on should be discarded as well. If it is applicable and there is no need to have Unicode characters, it is highly recommended to only accept Alpha-Numeric characters and only 1 dot as an input for the file name and the extension; in which the file name and also the extension should not be empty at all (regular expression: [a-zA-Z0-9]{1,200}\.[a-zA-Z0-9]{1,10}).</p>",<p>It is possible to upload files of any type to a server.</p>,,,<p>https://www.owasp.org/index.php/Unrestricted_File_Upload</p>,,
+45,Medium,6.5,,Network,Improper Network Segmentation,"<p>Due to improper network segmentation, there are accessible servers on the guest network which can control critical infrastructure and potentially leak Personally Identifiable Information (PII).</p>","<p>On the 10.0.200.0/24 guest subnet, a threat actor could access the tram location tracker service and exploit the vulnerability specified in finding&lt;meow&gt; to stop all RAKMS people moving systems by authenticating as Admin which can impact business operations and potentially harm travellers. In addition to being able to access the Industrial Control System, the CANICLES server, which is vulnerable to unsanitized user input, can leak travellers nationality and citizenship status if exploited, which is considered exposure of Personally Identifiable Information. It us RAKMS best interest to move these servers to an appropriate subnet.</p>","<ul>
+<li>Create new subnet for management services.</li>
+<li>Move sensitive hosts off guest network</li>
+</ul>",,,,"<ul>
+<li>https://csrc.nist.gov/pubs/sp/800/215/final</li>
+</ul>",,
+21,Medium,6.0,,Network,Anonymous SMB Login,"<p>An SMB server found on the network allowed for anonymous login, allowing unauthenticated users to enumerate and view potentially sensitive internal files and documents.</p>","<p>Although no important files were found in the anonymously accessible shares, the server configurations allowed for the team to successfully connect to the SMB server. If there were to be sensitive data uploaded to these shares, a user with no credentials would be able to access and view them.</p>","<ul>
+<li>Require domain authentication to interact with SMB</li>
+</ul>",,,,"<ul>
+<li>https://kb.itsystemlab.com/help/microsoft/how-to-disable-smb-log-in-possible-a nonymous/</li>
+</ul>",,
+28,Medium,6.0,,Web,HTTP Cleartext Credentials,"<p>The (TODO) web server, (although maybe configured to encrypt server-to-client communications), communications to the database on (TODO) and the web server were not encrypted.</p>
+<p>The webserver located on (TODO) uses HTTP port (TODO). HTTP transmits sensitive information in clear text which can be sniffed out be an adversary. The unencrypted connection makes any credentials you type in available to read.</p>","<p>If the adversary were to perform a man in the middle attack, the user's credentials would be sent over plain text giving the adversary the login information.</p>","<p>Install a self-signed certificate the mitigate the possibility of an adversary doing a man in the middle HTTP attack.</p>
+<p>Ideal configuration is the use of HTTPS which is secure transmission of HTTP - thus encrypting the communication while still providing authentication.</p>","<p>Utilize man in the middle software (Wireshark, Burpsuite, etc.) to intercept request headers after sending a login request.</p>",,,<p>https://attack.mitre.org/techniques/T1040/</p>,,
+39,Medium,6.0,,Web,Insufficient User Input Sanitization,"<p>Website has hardcoded javascript sanitization that is used to limit user input to only accepted parameters; however, sanitization can be by passed by manipulating &lt;TO DO&gt; parameter.</p>","<p>Insufficient user input sanitization can lead to exploitation of Cross Site Scripting (XSS), Command Injection, Path Traversal, and SQL Injection (SQLI)</p>","<p>To prevent insufficient sanitization, have user input be validated on both client and server side which ensures input adheres to the expected format, length, and range. It is also of best interest to &lt;TO DO&gt; to implement whitelists which define acceptable input patterns and reject anything outside of these patterns.</p>",,,,,,
+26,Medium,5.4,,Web,Missing API Security Headers,"<p>We were able to detect that the following API security headers are missing:<br />TODO<br />A CSP is an important standard by the W3C that is aimed to prevent a broad range of<br />content injection attacks such as cross-site scripting (XSS), data injection attacks, packet<br />sniffing attacks etc. It is a declarative policy that informs the user agent what are valid<br />sources to load resources from </p>","<ul>
+<li>Missing Content-Type header means that this website could be at risk of a MIMEsniffing attacks.</li>
+<li>Missing Strict Transport Security header means that the application fails to prevent<br />users from connecting to it over unencrypted connections. An attacker able to modify a legitimate user's network traffic could bypass the application's use of SSL/TLS encryption, and use the application as a platform for attacks against its users.</li>
+</ul>","<p>The recommended configuration for API endpoints is: </p>
+<p>Content-Security-Policy: default-src 'none';</p>
+<p>frame-ancestors: 'none'</p>
+<p>Strict-Transport-Security: max-age=63072000</p>
+<p>X-Content-Type-Options: nosniff</p>
+<p> </p>",,,,,,
+19,Medium,5.0,,Network,Insecure Account Lockout Policy,<p>The lack of an account lockout duration combined with a weak password policy allows an attacker to spray passwords across the TODO environment with no repercussions.</p>,<p>The team was able to leverage the lack of an account lockout duration to spray pilfered credentials across the network. This resulted in the compromise of multiple web portals. This greatly increases the risk of password spraying attacks which further combines the risk of weak passwords across the network.</p>,"<ul>
+<li>Revise the account lockout policy to reflect NIST standards</li>
+</ul>",,,,"<ul>
+<li>https://pages.nist.gov/800-63-3/sp800-63b.html#throttle</li>
+</ul>",,
+17,Medium,5.0,,Network,Sensitive Data Encoded in QR Code,"<p>Any user can encode point data into the QR code, allowing them to redeem a false amount of points. Additionally, a malicious actor can scan the QR code from the user’s computer, obtaining their account username, password, and amount of points.</p>","<p>By logging into a user’s reward point account, the team was able to obtain the user’s rewards QR code. Using open source tools to scan and investigate the code, the team can reveal the user’s username, password, and amount of points. This can be used to leak user credentials or nonexistent false points.</p>","<ul>
+<li>Modify QR code data format to not reveal account username, and password.</li>
+<li>Validate account points from a database rather than directly from a QR code.</li>
+</ul>",,,,,,
+16,Medium,5.0,,Network,Username Enumeration,"<p>A malicious actor can test if users exist on the TODO system, allowing them to create a list of valid users to attempt to breach. This list can be further used across the domain in phishing campaigns, password spraying attacks or other techniques.</p>","<p>By attempting a login with an invalid username, the TODO portal returns the error “Login Error: user not found”. If a valid username is entered, the portal returns the error message of “Login Error: Invalid Password”. When different messages are returned for a valid and invalid username, this allows a malicious user to determine if a user exists on the rewards system.</p>","<ul>
+<li>Return the same login error message for both a valid and invalid submitted username.</li>
+</ul>",,,,,,
+20,Medium,5.0,,Network,Users Can Join Workstations to the Domain,<p>All users are able to add up to TODO workstations to the domain. This allows regular users to create machine accounts and gain a persistent level of privilege.</p>,"<p>Authenticated users have the ability to add machines to the domain, an attacker could leverage this ability to add their machines and gain a higher level of persistence. The current configuration is not in line with the principle of least privilege and should be remediated so that only members of the technical department Organizational Unit (OU) are able to join machines.</p>","<ul>
+<li>Reduce the machine account quota granted to domain users</li>
+<li>Only members of the technical department OU are able to join machines to the domain</li>
+</ul>",,,,"<ul>
+<li>https://learn.microsoft.com/en-us/windows/win32/adschema/a-ms-ds-machineaccountqu ota</li>
+</ul>",,
+43,Medium,5.0,,Network,Windows SID Enumeration,<p>The team withheld the ability to enumerate Windows SIDs (Security Identifiers) via utilizing the Impacket python utility. Attempting to brute force Windows SIDs on a Windows network could potentially reveal information about the users and groups that exist on a remote server.</p>,"<p>Users have the ability to utilize the users and groups enumerated within the Impacket brute force in various other exploitation methods:</p>
+<p>Successful enumeration of SIDs could provide a threat actor with a list of existing users and groups on the network. This information is valuable for an attacker as it allows them to identify potential targets for further exploitation. Understanding the SIDs of high-privileged accounts or groups assisted the team in targeting these entities for password brute-forcing and password spraying attacks. Armed with information about specific users or groups, an attacker could launch more targeted attacks, such as spear-phishing or other social engineering techniques, to compromise specific individuals.</p>","<ul>
+<li>Strong Password Policies - By utilizing strong password policies, a threat actor would be unable to identify valid credentials associated with the remote users.</li>
+<li>Account Lockout Policies - Implementing a lockout policy to prevent users from attempting consecutive logins can prevent password spraying against these users.</li>
+<li>Two-Factor Authentication (2FA) - Implementing 2FA on login services to these respective Windows SIDs will prevent a user from gaining initial access once passwords are found for these users or groups.</li>
+</ul>",,,,"<p>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers</p>
+<p>https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids</p>",,
+15,Medium,4.0,,Network,Insecure SSH Configuration,<p>SSH configuration on domain joined Linux machines allows root login. The superuser account should never be allowed to logon directly over the network. Allowing root user login subverts other security measures such as the sudo command.</p>,<p>By viewing the SSH server configuration we can see below that the directive “PermitRootLogin” is set to “yes”. This allows remote users to login to the superuser account. If there is a weak or reused password this increases the risk of full system compromise. It is recommended that TCC disable root login over SSH and properly implement SUDO rules.</p>,"<ul>
+<li>Change SSH configuration to follow industry best practices</li>
+<li>Remove PermitRootLogon from SSH Configuration</li>
+</ul>",,,,<p>https://www.ssh.com/academy/ssh/sshd_config</p>,,
+13,Medium,4.0,,Network,Unprotected Administrators,<p>The team found that domain administrators were not members of the special protected users group. Making administrators members of this group would prevent the exfiltration of cached passwords and force a higher level of security for interactions with the accounts.</p>,"<p>Adding the domain administrators to the protected users group offers them a higher level of technical control. Membership to this group would decrease ticket lifetimes, mandate stronger encryption, prevent password caching, and disable NTLM authentication.</p>","<ul>
+<li>Add the administrative accounts and or groups to the protected users group</li>
+</ul>",,,,"<ul>
+<li>https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/how-to-configur e-protected-accounts#BKMK_AddtoProtectedUsers</li>
+</ul>",,
+4,Medium,4.0,,Web,Communications Over HTTP,"<p>Multiple web servers employed the use of unencrypted web traffic. If an attacker were to be sniffing traffic over the network, they would be able to see the communications, potentially revealing sensitive information such as user credentials or proprietary business information.</p>","<p>HTTP is an unencrypted protocol that is easily able to be intercepted and inspected with open source tools. The web server and all login portals transmit all traffic over HTTP. Meaning that an attacker, with internal access to the network, can view the credentials of users logging in as they are sent.</p>","<ul>
+<li>Enable strict use of HTTPS on all applicable hosts</li>
+</ul>",,,,"<ul>
+<li>https://www.hostinger.com/tutorials/ssl/forcing-https</li>
+</ul>",,"insecure,http,unencrypted,web"
+3,Low,3.0,CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N,Web,Exposed Dashboard,<p>A web server showing the TODO dashboard will leak various information pertaining to the environment. This configuration console is not protected by any form of authentication or access controls.</p>,"<p>The exposed web server lists the “dashboard” directory with host information pertaining to the environment and configuration. This dashboard leaked many pieces of sensitive information such as, TODO. With this information an attacker is easily able to identify key details related to the machine and further craft exploits and attacks.</p>","<ul>
+<li>Enable access controls to prevent unauthenticated users from viewing the dashboard</li>
+<li>If unneeded, disable the {dashboard} dashboard</li>
+</ul>",<p> Configuration console is not protected by any form of authentication or access controls</p>,<p>Enumerate</p>,,"<ul>
+<li>https://www.php.net/manual/en/function.phpinfo.php</li>
+</ul>",,"dashboard,exposed,phpinfo"
+34,Low,2.0,,Network,Sensitive Data in URL GET Query Parameters,"<p>Sensitive data may be intercepted by an attacker with the ability to read application traffic or logs. The attacker may then be able to perform chosen actions via the user's account, unbeknownst to the user.</p>","<p>Several parameters containing sensitive values are transmitted in URL GET query parameters. These parameters include TODO. Sending sensitive information via URL GET query parameters unnecessarily exposes these values in logs, caches, and TODO.</p>","<ul>
+<li>Submit the above parameters using POST requests, instead of GET requests. The parameters should be passed in the POST request body and not as URL query parameters.</li>
+<li>update all links from TODO to ensure that data is not unnecessarily exposed to third-party sites</li>
+</ul>",,,,,,
+37,Low,2.0,,Web,Unprofessional/Unfinished TOS,"<p>Terms of Service (TOS) agreements are important legally binding documents that should clearly outline to users how they're expected and allowed to use an organization's systems. A well-drafted TOS limits an organization's liability by outlining the acceptable use of company systems, it provides a legal basis for a company to enforce its rules.</p>","<p>Without a well-written Terms of Service agreement, there's legal ambiguity as to how a user is meant to use a system, this can result in uncertainty and legal battles regarding how situations should be resolved. A good TOS clearly outlines user expectations, lays out a framework for handling customer data and privacy, and lays out clear terms for payments and disputes where applicable. The team discovered a public-facing unfinished TOS on TODO, which lacked these features, resulting in a less professional appearance, and potentially opening up {{ .client }} to legal vulnerability.</p>","<ul>
+<li>Consult {{ .client }}'s legal team to write a comprehensive Terms of Service agreement</li>
+</ul>",,,,,,
+29,Informational,0.0,,Network,Enticement Information,<p>Attackers are able to gain insight on internal network technologies and security adverse individuals from public {{.client}} employee postings on social media.</p>,"<p>Through the employment of social network analysis the team was able to discover various {{.client}} employees divulging information relating to {{.client}}’s security posture. In addition, public job postings were able to provide insight on the internal {{.client}} tech stack.</p>","<ul>
+<li>Implement social media security training with existing employee enrichment</li>
+</ul>",,,,,,
+30,Informational,0.0,,Network,Publicly Exposed CCTV,"<p>Open {{.client}} webcams can be found at TODO. Using a standard internet browser, any agent can access and view the live feeds of the cameras.</p>","<p>Using techniques such as google dorking the team was able to find internal {{.client}} webcam feeds. Unauthenticated attackers are able to view, log, and monitor potentially sensitive customer interactions and potential leakage of PII.</p>","<ul>
+<li>Require authentication to view internal CCTV</li>
+<li>Do not host internal CCTV to the open internet</li>
+</ul>",,,,"<ul>
+<li><a href=""https://www.exploit-db.com/google-hacking-database"">https://www.exploit-db.com/google-hacking-database</a></li>
+</ul>",,
